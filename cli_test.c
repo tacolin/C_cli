@@ -36,6 +36,8 @@ static const char _banner[] =  "+---------------------+\n\r"
                                "|  This is My Banner  |\n\r"
                                "+---------------------+";
 
+static const char _config_filepath[] = "test.conf";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 static void _sigIntHandler(int sig_num)
@@ -47,30 +49,6 @@ static void _sigIntHandler(int sig_num)
 static int _regular(struct cli* cli, int argc, char* argv[])
 {
     cli_error(cli, "invalid input : %s", argv[0]);
-    return CLI_OK;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-DEFUN(_write_file,
-      _write_file_cmd,
-      "write FILEPATH",
-      "write input histories into a text file",
-      "filepath")
-{
-    cli_print(cli, "filepath = %s", argv[0]);
-    cli_save_histories(cli, argv[0]);
-    return CLI_OK;
-}
-
-DEFUN(_read_file,
-      _read_file_cmd,
-      "read FILEPATH",
-      "read command from configuration file",
-      "filepath")
-{
-    cli_print(cli, "filepath = %s", argv[0]);
-    cli_read_file(cli, argv[0]);
     return CLI_OK;
 }
 
@@ -264,6 +242,34 @@ DEFUN(_set_mix,
     return CLI_OK;
 }
 
+DEFUN(_write_file,
+      _write_file_cmd,
+      "write",
+      "[HELP] write history to a config file")
+{
+    int chk = cli_save_histories(cli, (char*)_config_filepath);
+    if (chk != CLI_OK)
+    {
+        cli_error(cli, "cli_save_histories to file : %s failed", _config_filepath);
+        return CLI_FAIL;
+    }
+    return CLI_OK;
+}
+
+DEFUN(_read_file,
+      _read_file_cmd,
+      "read",
+      "[HELP] read history from a config file")
+{
+    int chk = cli_execute_file(cli, (char*)_config_filepath);
+    if (chk != CLI_OK)
+    {
+        cli_error(cli, "cli_execute_file : %s failed", _config_filepath);
+        return CLI_FAIL;
+    }
+    return CLI_OK;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char const *argv[])
@@ -276,8 +282,8 @@ int main(int argc, char const *argv[])
 
     ////////////////////////////////////////////////////////////////////////
 
-    // chk = cli_server_init(&server, NULL, 5000, MAX_CONN, NULL, NULL);
-    chk = cli_server_init(&server, NULL, 5000, MAX_CONN, "5566", "i am sad");
+    chk = cli_server_init(&server, NULL, 5000, MAX_CONN, NULL, NULL);
+    // chk = cli_server_init(&server, NULL, 5000, MAX_CONN, "5566", "i am sad");
     CHECK_IF(chk != CLI_OK, return -1, "cli_server_init failed");
 
     chk = cli_server_banner(&server, (char*)_banner);
@@ -306,6 +312,11 @@ int main(int argc, char const *argv[])
     chk = cli_server_install_cmd(&server, ENABLE_MODE, &_exit_cmd);
     CHECK_IF(chk != CLI_OK, goto _END, "cli_server_install_cmd _exit_cmd failed");
 
+    chk = cli_server_install_cmd(&server, ENABLE_MODE, &_read_file_cmd);
+    CHECK_IF(chk != CLI_OK, goto _END, "cli_server_install_cmd _read_file_cmd failed");
+
+    ////////////////////////////////////////////////////////////////////////
+
     chk = cli_server_install_cmd(&server, CONFIG_MODE, &_set_integer_cmd);
     CHECK_IF(chk != CLI_OK, goto _END, "cli_server_install_cmd _set_integer_cmd failed");
 
@@ -323,6 +334,9 @@ int main(int argc, char const *argv[])
 
     chk = cli_server_install_cmd(&server, CONFIG_MODE, &_set_mix_cmd);
     CHECK_IF(chk != CLI_OK, goto _END, "cli_server_install_cmd _set_mix_cmd failed");
+
+    chk = cli_server_install_cmd(&server, CONFIG_MODE, &_write_file_cmd);
+    CHECK_IF(chk != CLI_OK, goto _END, "cli_server_install_cmd _write_file_cmd failed");
 
     chk = cli_server_install_cmd(&server, CONFIG_MODE, &_exit_cmd);
     CHECK_IF(chk != CLI_OK, goto _END, "cli_server_install_cmd _exit_cmd failed");

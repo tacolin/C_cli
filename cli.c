@@ -1848,7 +1848,6 @@ static void _save_to_file(int idx, void* data, void* arg)
 {
     FILE* fp = (FILE*)arg;
     fprintf(fp, "%s\n", (char*)data);
-    derror("here %d", idx);
     return;
 }
 
@@ -1875,7 +1874,7 @@ _ERROR:
     return CLI_FAIL;
 }
 
-int cli_read_file(struct cli* cli, char* filepath)
+int cli_execute_file(struct cli* cli, char* filepath)
 {
     CHECK_IF(cli == NULL, return CLI_FAIL, "cli is null");
     CHECK_IF(cli->is_init != 1, return CLI_FAIL, "cli is not init yet");

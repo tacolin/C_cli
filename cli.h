@@ -113,9 +113,8 @@ int cli_process(struct cli* cli);
 
 int cli_change_mode(struct cli* cli, int mode_id);
 
-int cli_execute_cmd(struct cli* cli, char* string);
-
 int cli_save_histories(struct cli* cli, char* filepath);
+int cli_execute_file(struct cli* cli, char* filepath);
 
 ////////////////////////////////////////////////////////////////////////////////
 
