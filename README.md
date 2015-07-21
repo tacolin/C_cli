@@ -37,4 +37,4 @@ Open another terminal
 
 ## Document?
 
-You could read the cli_test.c. Most kinds of usage will be in there.
+You could read the [cli_test.c](cli_test.c). Most kinds of usage will be in there.
