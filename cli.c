@@ -467,7 +467,7 @@ static int _compare_cmd_str(void* data, void* arg)
     else if (c->type == CMD_INT)
     {
         // long lbound, ubound;
-        // sscanf(c->str, "<%ld-%ld>", &lbound, &ubound);
+        // sscanf(c->str, "<%ld~%ld>", &lbound, &ubound);
 
         int i;
         int len = strlen(str);
@@ -475,7 +475,10 @@ static int _compare_cmd_str(void* data, void* arg)
         {
             if ((str[i] < '0') || (str[i] > '9'))
             {
-                ret = false;
+                if (str[i] != '-')
+                {
+                    ret = false;
+                }
             }
         }
 
@@ -1663,7 +1666,7 @@ static struct cli_cmd* _install_cmd_element(struct cli_server* server, struct cl
     long lbound = 0;
     if (type == CMD_INT)
     {
-        if (2 != sscanf(pre_process_str, "<%ld-%ld>", &lbound, &ubound))
+        if (2 != sscanf(pre_process_str, "<%ld~%ld>", &lbound, &ubound))
         {
             derror("parse %s failed", pre_process_str);
             free(pre_process_str);

@@ -96,7 +96,7 @@ DEFUN(_exit_mode,
 
 DEFUN(_set_integer,
       _set_integer_cmd,
-      "set int <-100-5000>",
+      "set int <-100~5000>",
       "[HELP] set something")   // description num could be less than string number
 {
     cli_print(cli, "this is a set int cmd");
@@ -171,6 +171,31 @@ DEFUN(_set_string,
     return CLI_OK;
 }
 
+DEFUN(_set_macaddr,
+      _set_macaddr_cmd,
+      "set mac X:X:X:X:X:X",
+      "[HELP] set something",
+      "[HELP] string token",
+      "[HELP] your input macaddr")
+{
+    if (argc <= 0)
+    {
+        cli_error(cli, "argc <= 0 is invalid");
+        return CLI_FAIL;
+    }
+    cli_print(cli, "argc = %d, argv[0] = %s", argc, argv[0]);
+
+    unsigned int mac[6];
+    int num = sscanf(argv[0], "%x:%x:%x:%x:%x:%x", &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
+    if (num != 6)
+    {
+        cli_error(cli, "sscanf failed, num = %d", num);
+        return CLI_FAIL;
+    }
+    cli_print(cli, "mac addr = %x %x %x %x %x %x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    return CLI_OK;
+}
+
 // (on on | off off) is invalid. each alternative option should be a single word
 DEFUN(_set_alternative,
       _set_alternative_cmd,
@@ -205,7 +230,7 @@ DEFUN(_set_alternative,
 
 DEFUN(_set_option,
       _set_option_cmd,
-      "set option [<1-100>]",
+      "set option [<1~100>]",
       "[HELP] set something",
       "[HELP] option token",
       "[HELP] option input")
@@ -221,7 +246,7 @@ DEFUN(_set_option,
 
 DEFUN(_set_mix,
       _set_mix_cmd,
-      "set int <1-65535> ipv4 A.B.C.D/M string LALALA LULULU alternative (|on|off)",
+      "set int <1~65535> ipv4 A.B.C.D/M string LALALA LULULU alternative (|on|off)",
       "[HELP] set something",
       "[HELP] i am too lazy to write descriptions...")
 {
@@ -322,6 +347,9 @@ int main(int argc, char const *argv[])
 
     chk = cli_server_install_cmd(&server, CONFIG_MODE, &_set_ipv4_cmd);
     CHECK_IF(chk != CLI_OK, goto _END, "cli_server_install_cmd _set_ipv4_cmd failed");
+
+    chk = cli_server_install_cmd(&server, CONFIG_MODE, &_set_macaddr_cmd);
+    CHECK_IF(chk != CLI_OK, goto _END, "cli_server_install_cmd _set_macaddr_cmd failed");
 
     chk = cli_server_install_cmd(&server, CONFIG_MODE, &_set_string_cmd);
     CHECK_IF(chk != CLI_OK, goto _END, "cli_server_install_cmd _set_string_cmd failed");
